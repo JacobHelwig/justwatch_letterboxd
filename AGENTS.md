@@ -15,7 +15,7 @@ JustWatch aggregates streaming availability for movies across platforms (Netflix
 **User Workflow**:
 1. Select streaming services or search by title
 2. App fetches available movies from JustWatch with Letterboxd ratings
-3. Filter results by genre, rating, or year
+3. Filter results by genre, rating, year, number of users that have reviewed on Letterboxd (need to check if this last one is a feature of letterboxdpy)
 
 ## Development Setup 
 
@@ -25,7 +25,6 @@ JustWatch aggregates streaming availability for movies across platforms (Netflix
 - **API Keys Required**: None (both APIs use unofficial methods)
 - **Environment Variables**: See `.env.example`
 
-## Essential Commands
 ## Essential Commands
 
 ```bash
@@ -45,9 +44,9 @@ PYTHONPATH=. uv run python tests/test_web_api.py --verbose
 uv run ruff check .
 
 # Format code
-## Development Workflow
+# TODO: add command for code formatting
+```
 
-**Branch-Based Development**:
 ## Development Workflow
 
 **Branch-Based Development**:
@@ -56,15 +55,6 @@ uv run ruff check .
 - Open PR for review before merging to main
 - Delete branch after merging
 
-**Incremental Development**:
-- Commit changes incrementally after each logical unit of work
-- Run tests after each implementation before committing
-- Never commit broken code or failing tests
-
-**Documentation Maintenance**:
-- Update `README.md` and `AGENTS.md` after completing features or milestones
-- Remove outdated information and correct inaccuracies when discovered
-- Keep documentation synchronized with actual implementation
 **Pre-Commit Checklist**:
 1. ✅ Tests pass (`uv run pytest`)
 2. ✅ Linter clean (`uv run ruff check .`)
@@ -76,6 +66,16 @@ All commits made by AdaL should include co-authorship line at the end of commit 
 ```
 Co-Authored-By: AdaL <adal@sylph.ai>
 ```
+
+**Incremental Development**:
+- Commit changes incrementally after each logical unit of work
+- Run tests after each implementation before committing
+- Never commit broken code or failing tests
+
+**Documentation Maintenance**:
+- Update `README.md` and `AGENTS.md` after completing features or milestones
+- Remove outdated information and correct inaccuracies when discovered
+- Keep documentation synchronized with actual implementation
 
 **Command Approval**:
 AdaL uses `skip_approval=true` for all operations (read-only and write/modify). This allows seamless automation of tasks like git commits, PR creation, and file modifications without manual approval prompts.
@@ -90,6 +90,7 @@ AdaL uses `skip_approval=true` for all operations (read-only and write/modify). 
   - Print detailed output when verbose flag is provided
   - Show function return values and intermediate results
   - Usage: `PYTHONPATH=. uv run python tests/test_*.py --verbose`
+
 ## API Integration Details
 
 ### JustWatch API
@@ -194,21 +195,28 @@ movie.url              # Letterboxd URL
 **Goal 2: Core Integration** ✅ COMPLETED
 - JustWatch client wrapper (`src/justwatch/client.py`)
 - Letterboxd client wrapper (`src/letterboxd/client.py`)
+- Movie matching logic with IMDb ID-based matching (`src/matcher.py`)
+- SQLite caching layer (`src/cache.py`)
+- Integration tests (43 tests passing)
+
 **Goal 3: Web Interface** 🚧 IN PROGRESS
 - [x] FastAPI backend with REST API endpoints
 - [x] Frontend UI (HTML, CSS, JavaScript)
+- [x] Performance profiling and Letterboxd rating sorting
+- [ ] Netflix catalog scraper (JustWatch website)
+- [ ] Daily background sync job
+- [ ] Developer logging for missing Letterboxd titles
 - [ ] Docker containerization
 - [ ] Deployment to cloud hosting
-- [ ] Deployment to cloud hosting
-- [x] Add caching layer (SQLite or JSON)
-- [x] Write integration tests
 
-**Goal 3: Web Interface** 
-- [ ] Set up web framework (Flask/FastAPI)
-- [ ] Create API endpoints for movie search and filtering
-- [ ] Build frontend UI for streaming service selection
-- [ ] Add filtering by genre, rating, year
-- [ ] Deploy as public website
+**Goal 4: Netflix-Focused Catalog Management** 📋 PLANNED
+- [ ] Web scraper for JustWatch Netflix page (~7K titles)
+- [ ] Catalog comparison logic (new/removed/retained titles)
+- [ ] Daily background sync job (APScheduler/Celery)
+- [ ] Developer logs for movies not found on Letterboxd
+- [ ] Cache optimization (48h expiration, differential updates)
+- [ ] Sync status API endpoint (`GET /api/sync/status`)
+- [ ] Missing movies export (`GET /api/sync/missing`)
 
 ## Future Work / TODOs
 
@@ -218,13 +226,19 @@ movie.url              # Letterboxd URL
 - [ ] Add test coverage reporting
 - [ ] Configure automated PR checks (linting, tests, coverage)
 
+**Performance & Scalability**:
+- [ ] Concurrent API calls for Letterboxd (reduce from 2s/movie to batch processing)
+- [ ] Background cache warming for popular movies
+- [ ] Progress indicators for long-running operations
+- [ ] Pagination support for large result sets
+
 ## Important Notes
 
 - **Legal**: Ensure compliance with JustWatch and Letterboxd Terms of Service
 - **Rate Limits**: Both services - use 1-2 second delays
 - **Data Privacy**: Follow security best practices for any user data
-- **Regional Settings**: Allow users to specify country for accurate availability
-
+- **Regional Settings**: Currently US-focused, allow users to specify country for accurate availability
+- **Web Scraping**: JustWatch website scraping should be respectful (once daily at 2 AM)
 ## Resources
 
 - **JustWatch API Library**: https://github.com/Electronic-Mango/simple-justwatch-python-api
