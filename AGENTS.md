@@ -61,7 +61,9 @@ uv run ruff format .
 - Never commit broken code or failing tests
 
 **Documentation Maintenance**:
-- Update `README.md` after completing features or milestones
+- Update `README.md` and `AGENTS.md` after completing features or milestones
+- Remove outdated information and correct inaccuracies when discovered
+- Keep documentation synchronized with actual implementation
 **Pre-Commit Checklist**:
 1. ✅ Tests pass (`uv run pytest`)
 2. ✅ Linter clean (`uv run ruff check .`)
