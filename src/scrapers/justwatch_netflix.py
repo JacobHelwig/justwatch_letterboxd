@@ -53,26 +53,22 @@ class NetflixScraper:
                     
                     soup = BeautifulSoup(response.text, 'lxml')
                     
-                    # Extract movie tiles - try multiple selectors
-                    movie_tiles = soup.find_all('div', class_='title-list-grid__item')
+                    # Extract movie links directly (tiles don't contain links)
+                    movie_links = soup.find_all('a', href=re.compile(r'/movie/'))
                     
-                    if not movie_tiles:
+                    if not movie_links:
                         logger.info(f"No more movies found on page {page}, stopping")
                         break
                     
-                    for tile in movie_tiles:
-                        movie = self._extract_movie_data(tile)
+                    for link in movie_links:
+                        movie = self._extract_movie_data_from_link(link)
                         if movie:
                             movies.append(movie)
                     
-                    logger.info(f"Page {page}: Found {len(movie_tiles)} movies (total: {len(movies)})")
+                    logger.info(f"Page {page}: Found {len(movie_links)} movies (total: {len(movies)})")
                     
-                    # Check if there's a next page
-                    next_page = soup.find('a', {'aria-label': 'Next Page'})
-                    if not next_page:
-                        logger.info("No next page link found, stopping")
-                        break
-                    
+                    # Continue to next page (no need to check for next page link)
+                    # JustWatch uses sliding window pagination - just keep going until no movies found
                     page += 1
                     
                     # Rate limiting - be respectful
@@ -91,57 +87,51 @@ class NetflixScraper:
         
         return movies
     
-    def _extract_movie_data(self, tile) -> Optional[Dict]:
+    def _extract_movie_data_from_link(self, link) -> Optional[Dict]:
         """
-        Extract movie data from HTML tile
+        Extract movie data from movie link element
         
         Args:
-            tile: BeautifulSoup element containing movie data
+            link: BeautifulSoup anchor element with movie link
             
         Returns:
             Dictionary with movie data or None if extraction fails
         """
         try:
-            # Extract title
-            title_elem = tile.find('a', class_='title-list-grid__item--link')
-            if not title_elem:
+            title = link.get_text(strip=True)
+            href = link.get('href', '')
+            
+            if not title or not href:
                 return None
             
-            title = title_elem.get('title', '').strip()
-            href = title_elem.get('href', '')
+            logger.debug(f"Found movie: {title}, href: {href}")
             
             # Extract JustWatch ID from URL
             justwatch_id = None
-            match = re.search(r'/movie/([^/]+)', href)
+            match = re.search(r'/movie/([^/?]+)', href)
             if match:
                 justwatch_id = match.group(1)
             
-            # Extract year
-            year_elem = tile.find('div', class_='title-list-grid__item--year')
+            # Extract year - look in surrounding text
+            parent = link.parent
             year = None
-            if year_elem:
-                year_text = year_elem.text.strip()
-                year_match = re.search(r'\d{4}', year_text)
+            if parent:
+                parent_text = parent.get_text()
+                year_match = re.search(r'\b(19|20)\d{2}\b', parent_text)
                 if year_match:
                     year = int(year_match.group())
             
-            # Extract IMDb ID from data attributes or links
+            # IMDb ID not available in list view
             imdb_id = None
-            imdb_link = tile.find('a', href=re.compile(r'imdb\.com/title/(tt\d+)'))
-            if imdb_link:
-                imdb_match = re.search(r'tt\d+', imdb_link.get('href', ''))
-                if imdb_match:
-                    imdb_id = imdb_match.group()
             
-            if not title:
-                return None
+            logger.debug(f"Extracted: {title} ({year}) - {justwatch_id}")
             
             return {
                 'title': title,
                 'year': year,
                 'imdb_id': imdb_id,
                 'justwatch_id': justwatch_id,
-                'justwatch_url': f"https://www.justwatch.com{href}" if href else None
+                'justwatch_url': f"https://www.justwatch.com{href}" if href.startswith('/') else href
             }
             
         except Exception as e:
