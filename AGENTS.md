@@ -62,18 +62,23 @@ uv run ruff format .
 
 **Documentation Maintenance**:
 - Update `README.md` after completing features or milestones
-  - Keep "Project Status" current with completed goals
-  - Update "Features" section as capabilities are added
-- Update `AGENTS.md` after discovering gotchas, patterns, or architecture changes
-  - Document API quirks immediately when discovered
-  - Add integration patterns when established
-- Keep roadmap in sync across `README.md` (Project Status) and `AGENTS.md` (Current Development Goal)
-
 **Pre-Commit Checklist**:
 1. ✅ Tests pass (`uv run pytest`)
 2. ✅ Linter clean (`uv run ruff check .`)
 3. ✅ Docs updated (README.md, AGENTS.md reflect changes)
-4. ✅ Commit message descriptive
+4. ✅ Commit message descriptive with co-authorship
+
+**Git Commit Co-Authorship**:
+All commits made by AdaL should include co-authorship line at the end of commit message:
+```
+Co-Authored-By: AdaL <adal@sylph.ai>
+```
+
+**Testing Requirements**:
+- All new features must include tests when feasible
+- Tests should cover core functionality and edge cases
+- Run tests before committing to ensure they pass
+- Test files should be named `test_*.py` and placed in `tests/` directory
 ## API Integration Details
 
 ### JustWatch API
