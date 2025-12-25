@@ -65,7 +65,7 @@ uv run ruff format .
 **Pre-Commit Checklist**:
 1. ✅ Tests pass (`uv run pytest`)
 2. ✅ Linter clean (`uv run ruff check .`)
-3. ✅ Docs updated (README.md, AGENTS.md reflect changes)
+3. ✅ Docs updated (README.md, AGENTS.md reflect changes, no outdated info)
 4. ✅ Commit message descriptive with co-authorship
 
 **Git Commit Co-Authorship**:
