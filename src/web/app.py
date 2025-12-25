@@ -2,6 +2,9 @@
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
+from pathlib import Path
 from typing import List, Optional
 from pydantic import BaseModel
 
@@ -59,18 +62,22 @@ jw_client = JustWatchClient()
 lb_client = LetterboxdClient()
 matcher = MovieMatcher(jw_client, lb_client)
 cache = MovieCache()
+# Initialize clients
+jw_client = JustWatchClient()
+lb_client = LetterboxdClient()
+matcher = MovieMatcher(jw_client, lb_client)
+cache = MovieCache()
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 async def root():
-    """Root endpoint"""
-    return {
-        "message": "JustWatch + Letterboxd Integration API",
-        "docs": "/docs",
-        "version": "1.0.0"
-    }
+    """Serve main HTML page"""
+    html_path = Path(__file__).parent / "templates" / "index.html"
+    return HTMLResponse(content=html_path.read_text())
 
 
+# Mount static files
+app.mount("/static", StaticFiles(directory=str(Path(__file__).parent / "static")), name="static")
 @app.get("/health")
 async def health():
     """Health check endpoint"""

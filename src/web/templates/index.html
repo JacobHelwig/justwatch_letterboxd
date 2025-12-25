@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JustWatch + Letterboxd Integration</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div>
+                <h1>🎬 Movie Finder</h1>
+                <div class="subtitle">Discover streaming movies with Letterboxd ratings</div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Search Section -->
+        <section class="search-section">
+            <form id="searchForm" class="search-box">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="Search for a movie..."
+                    required
+                >
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+
+            <!-- Platform Selection -->
+            <div class="platform-selector">
+                <h3>Or browse by streaming platform</h3>
+                <div id="platformGrid" class="platform-grid">
+                    <!-- Platforms loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- Filters (hidden by default) -->
+            <div id="filters" class="filters hidden">
+                <div class="filter-group">
+                    <label for="genreFilter">Genre</label>
+                    <input 
+                        type="text" 
+                        id="genreFilter" 
+                        class="filter-input" 
+                        placeholder="e.g., Action, Drama"
+                    >
+                </div>
+                <div class="filter-group">
+                    <label for="minRatingFilter">Min Rating</label>
+                    <input 
+                        type="number" 
+                        id="minRatingFilter" 
+                        class="filter-input" 
+                        placeholder="0-5" 
+                        min="0" 
+                        max="5" 
+                        step="0.1"
+                    >
+                </div>
+                <div class="filter-group">
+                    <label for="maxRatingFilter">Max Rating</label>
+                    <input 
+                        type="number" 
+                        id="maxRatingFilter" 
+                        class="filter-input" 
+                        placeholder="0-5" 
+                        min="0" 
+                        max="5" 
+                        step="0.1"
+                    >
+                </div>
+                <div class="filter-group">
+                    <label for="yearFilter">Year</label>
+                    <input 
+                        type="number" 
+                        id="yearFilter" 
+                        class="filter-input" 
+                        placeholder="e.g., 2020" 
+                        min="1900" 
+                        max="2100"
+                    >
+                </div>
+                <div class="filter-group">
+                    <button id="clearFilters" class="btn btn-secondary">Clear Filters</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section id="resultsSection" class="results-section hidden">
+            <div class="results-header">
+                <h2 id="resultsTitle">Results</h2>
+                <div id="resultsCount" class="results-count"></div>
+            </div>
+            <div id="movieGrid" class="movie-grid">
+                <!-- Movies loaded dynamically -->
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
