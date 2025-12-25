@@ -15,7 +15,7 @@ JustWatch aggregates streaming availability for movies across platforms (Netflix
 **User Workflow**:
 1. Select streaming services or search by title
 2. App fetches available movies from JustWatch with Letterboxd ratings
-3. Filter results by genre, rating, year, number of users that have reviewed on Letterboxd (need to check if this last one is a feature of letterboxdpy)
+3. Filter results by genre, rating, year
 
 ## Development Setup 
 
@@ -44,7 +44,7 @@ PYTHONPATH=. uv run python tests/test_web_api.py --verbose
 uv run ruff check .
 
 # Format code
-# TODO: add command for code formatting
+uv run ruff format .
 ```
 
 ## Development Workflow
