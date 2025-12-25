@@ -84,6 +84,11 @@ AdaL uses `skip_approval=true` for all operations (read-only and write/modify). 
 - Tests should cover core functionality and edge cases
 - Run tests before committing to ensure they pass
 - Test files should be named `test_*.py` and placed in `tests/` directory
+- All test files must include verbose mode support:
+  - Add `--verbose` or `-v` flag to main() function
+  - Print detailed output when verbose flag is provided
+  - Show function return values and intermediate results
+  - Usage: `PYTHONPATH=. uv run python tests/test_*.py --verbose`
 ## API Integration Details
 
 ### JustWatch API
