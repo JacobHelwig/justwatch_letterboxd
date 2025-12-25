@@ -4,7 +4,7 @@ This file provides guidance to agents (i.e., ADAL) when working with code in thi
 
 ## Project Overview
 
-**justwatch_letterboxd** - A tool to integrate JustWatch streaming availability data with Letterboxd movie lists.
+**justwatch_letterboxd** - A web application that integrates JustWatch streaming availability data with Letterboxd movie ratings.
 
 **Current Status**: Goal 1 completed - API integration validated
 
@@ -25,8 +25,6 @@ The base user workflow would be:
 - **Dependencies**: simple-justwatch-python-api, letterboxdpy, httpx, pytest
 - **API Keys Required**: None (both APIs use unofficial methods)
 - **Environment Variables**: See `.env.example`
-
-## Essential Commands
 
 ## Essential Commands
 
@@ -127,6 +125,20 @@ movie.url              # Letterboxd URL
 - ⚠️ Must use slug format: "the-matrix" not "The Matrix"
 - ⚠️ New movies may not have ratings yet
 
+### API Test Results
+
+**JustWatch API** (`simple-justwatch-python-api` v0.16):
+- **Test Cases**: Inception (not on Netflix US), Stranger Things ✅, The Crown ✅, Squid Game ✅
+- **Success Rate**: 3/3 Netflix titles verified
+- **Performance**: ~1-2 seconds per query via GraphQL
+- **Observations**: Regional availability differs significantly; IMDb/TMDB IDs provided for cross-referencing
+
+**Letterboxd API** (`letterboxdpy` v5.3.7):
+- **Test Cases**: Inception (4.22/5.0) ✅, Shawshank Redemption (4.58/5.0) ✅, Pulp Fiction (4.25/5.0) ✅, User profile (jack) ✅
+- **Success Rate**: 3/3 movies + 1 user profile verified
+- **Performance**: 2-4 seconds per movie via web scraping
+- **Observations**: Genres returned as dict objects with 'name' key; IMDb links available for cross-referencing
+
 ### Integration Strategy
 **Movie Matching**:
 - **Primary**: Use IMDb ID (both APIs provide)
@@ -153,15 +165,16 @@ movie.url              # Letterboxd URL
 │   ├── __init__.py              # Package initialization
 │   ├── justwatch/               # JustWatch API client (to implement)
 │   ├── letterboxd/              # Letterboxd API client (to implement)
-│   └── cli/                     # CLI interface (to implement)
+│   └── web/                     # Web application interface (to implement)
 ├── tests/                       # Test suite
 │   ├── __init__.py
 │   ├── test_justwatch.py        # JustWatch API validation
 │   └── test_letterboxd.py       # Letterboxd API validation
-├── docs/                        # Documentation
-│   └── API_FINDINGS.md          # API test results
 ├── .env.example                 # Environment template
 ├── pyproject.toml               # uv configuration
+└── README.md                    # User documentation
+```
+
 ## Current Development Goal
 
 **Goal 1: API Access & Basic Integration Testing** ✅ COMPLETED
@@ -180,11 +193,12 @@ movie.url              # Letterboxd URL
 - [ ] Add caching layer (SQLite or JSON)
 - [ ] Write integration tests
 
-**Goal 3: CLI Interface** (Proposed)
-- [ ] Accept user input for streaming service selection
-- [ ] Display movie results in formatted table
-- [ ] Add filters (genre, rating threshold, year)
-- [ ] Export results to CSV/JSON
+**Goal 3: Web Interface** (Proposed)
+- [ ] Set up web framework (Flask/FastAPI)
+- [ ] Create API endpoints for movie search and filtering
+- [ ] Build frontend UI for streaming service selection
+- [ ] Add filtering by genre, rating, year
+- [ ] Deploy as public website
 
 ## Important Notes
 
@@ -199,4 +213,3 @@ movie.url              # Letterboxd URL
 - **Letterboxd API Library**: https://pypi.org/project/letterboxdpy/
 - **JustWatch Website**: https://www.justwatch.com/
 - **Letterboxd Website**: https://letterboxd.com/
-- **API Test Results**: See `docs/API_FINDINGS.md`

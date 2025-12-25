@@ -1,123 +1,53 @@
 # JustWatch + Letterboxd Integration
 
-Discover highly-rated movies on your favorite streaming platforms by combining JustWatch streaming availability with Letterboxd ratings.
+Discover highly-rated movies on your favorite streaming platforms. Our web application combines JustWatch streaming availability with Letterboxd ratings to help you find the perfect movie to watch tonight.
 
-## What It Does
+## What We Offer
 
-This tool helps you find movies to watch by:
-1. **Select** your streaming service (Netflix, Hulu, etc.)
-2. **Fetch** available movies from JustWatch for your region
-3. **Enrich** with Letterboxd ratings and metadata
-4. **Filter** by rating, genre, year, and more
-
-## Quick Start
-
-### Installation
-
-```bash
-# Clone repository
-git clone https://github.com/JacobHelwig/justwatch_letterboxd.git
-cd justwatch_letterboxd
-
-# Install dependencies with uv
-uv sync
-```
-
-### Configuration
-
-Copy `.env.example` to `.env` and configure your preferences:
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env`:
-```bash
-JUSTWATCH_COUNTRY=US        # Your country code (US, GB, FR, etc.)
-JUSTWATCH_LANGUAGE=en       # Language code
-```
-
-### Run Tests
-
-```bash
-# Test JustWatch API
-uv run python tests/test_justwatch.py
-
-# Test Letterboxd API
-uv run python tests/test_letterboxd.py
-```
-
-## Project Status
-
-**Current**: Goal 1 completed - API integration validated
-- ✅ JustWatch API: Streaming availability fetching
-- ✅ Letterboxd API: Movie ratings and metadata
-- ✅ Test scripts verified with 100% success rate
-
-**Next**: Goal 2 - Core integration (client wrappers, caching, matching logic)
+**A public website where you can**:
+1. Select your streaming services (Netflix, Hulu, Amazon Prime, etc.)
+2. Browse movies available on your platforms
+3. See Letterboxd ratings and reviews for each movie
+4. Filter by genre, rating, and year
+5. Find hidden gems worth watching
 
 ## Features
 
-### JustWatch Integration
-- Search movies across 60+ countries
-- Filter by streaming platform (Netflix, Hulu, Amazon Prime, etc.)
-- Get offers by quality (4K, HD, SD)
-- No authentication required
+- **Multi-Platform Support**: Search across 60+ countries and all major streaming services
+- **Smart Matching**: Automatically matches movies between JustWatch and Letterboxd using IMDb IDs
+- **Rich Metadata**: Movie ratings, genres, directors, and cast information
+- **Real-Time Data**: Fresh streaming availability and rating data
+- **No Account Required**: Browse and discover movies without signing up
 
-### Letterboxd Integration
-- Movie ratings (1-5 scale)
-- Genres, year, directors
-- User profile data (public profiles only)
-- No authentication required for public data
+## Project Status
 
-### Matching Strategy
-- **Primary**: IMDb ID matching (most reliable)
-- **Fallback**: Title + year matching
+🚧 **In Development**
 
-## Project Structure
+- ✅ **Goal 1 Complete**: API integration validated (JustWatch + Letterboxd)
+- 🔄 **Goal 2 In Progress**: Building core integration and web interface
+- ⏳ **Goal 3 Planned**: Deploy public website with full feature set
 
-```
-.
-├── src/                    # Main source code
-│   ├── justwatch/         # JustWatch API client (planned)
-│   ├── letterboxd/        # Letterboxd API client (planned)
-│   └── cli/               # CLI interface (planned)
-├── tests/                 # Test suite
-│   ├── test_justwatch.py  # JustWatch API tests
-│   └── test_letterboxd.py # Letterboxd API tests
-├── docs/                  # Documentation
-│   └── API_FINDINGS.md    # API test results
-├── .env.example          # Environment template
-└── AGENTS.md             # Developer guidance (for AdaL)
-```
+## Coming Soon
 
-## Dependencies
-
-- **Python**: 3.14+ (managed by uv)
-- **JustWatch**: `simple-justwatch-python-api` (unofficial GraphQL client)
-- **Letterboxd**: `letterboxdpy` (web scraping library)
-- **HTTP**: `httpx` (async HTTP client)
-- **Testing**: `pytest`
+- Browse trending movies on your streaming platforms
+- Save favorite movies and create watchlists
+- Get personalized recommendations based on your ratings
+- Share movie lists with friends
+- Mobile-responsive design
 
 ## Contributing
 
 This project is developed with assistance from [AdaL](https://github.com/sylphai/adal-cli), an AI coding assistant.
 
-Contributions welcome! See `AGENTS.md` for development guidance.
+For developers interested in contributing, see `AGENTS.md` for technical guidance.
 
 ## Legal
 
-- **JustWatch**: Uses unofficial GraphQL API (may break if schema changes)
-- **Letterboxd**: Uses web scraping for public data (fragile to HTML changes)
-- **Rate Limiting**: Respects both services with 1-2 second delays
-- **Terms of Service**: Ensure compliance with JustWatch and Letterboxd ToS
-
-## References
-
-- [JustWatch](https://www.justwatch.com/)
-- [Letterboxd](https://letterboxd.com/)
-- [simple-justwatch-python-api](https://github.com/Electronic-Mango/simple-justwatch-python-api)
-- [letterboxdpy](https://pypi.org/project/letterboxdpy/)
+This website uses unofficial APIs for educational purposes:
+- **JustWatch**: Unofficial GraphQL API (no affiliation with JustWatch)
+- **Letterboxd**: Web scraping for public data (no affiliation with Letterboxd)
+- **Rate Limiting**: Respects both services with appropriate delays
+- **Terms of Service**: Users should comply with JustWatch and Letterboxd ToS
 
 ## License
 
