@@ -7,11 +7,17 @@ from fastapi.responses import HTMLResponse
 from pathlib import Path
 from typing import List, Optional
 from pydantic import BaseModel
+import time
+import logging
 
 from src.justwatch.client import JustWatchClient
 from src.letterboxd.client import LetterboxdClient
 from src.matcher import MovieMatcher, MatchedMovie
 from src.cache import MovieCache
+
+# Configure logging for profiling
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 # Pydantic models for API responses
@@ -129,19 +135,10 @@ async def search_movies(
         movies = []
         for jw_movie in jw_results:
             matched = matcher.match_by_imdb_id(jw_movie)
-            if matched:
-                # Cache each matched movie
-                cache.set(matched)
-                movies.append(MovieResponse(**matched.__dict__))
-        
         return SearchResponse(movies=movies, total=len(movies))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-        return SearchResponse(movies=movies, total=len(movies))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 @app.get("/api/movies/{platform}", response_model=SearchResponse)
 async def get_movies_by_platform(
     platform: str,
@@ -163,13 +160,20 @@ async def get_movies_by_platform(
         year: Filter by release year
     
     Returns:
-        SearchResponse with matched movies
+        SearchResponse with matched movies sorted by Letterboxd rating
     """
+    start_time = time.time()
+    
     try:
         # Get movies from platform
+        logger.info(f"Fetching {count} movies from {platform}")
+        fetch_start = time.time()
         movies = matcher.match_platform_movies(platform, count=count)
+        fetch_time = time.time() - fetch_start
+        logger.info(f"Fetched {len(movies)} movies in {fetch_time:.2f}s ({fetch_time/len(movies) if movies else 0:.2f}s per movie)")
         
         # Apply filters
+        filter_start = time.time()
         filtered_movies = []
         for movie in movies:
             # Genre filter
@@ -187,6 +191,26 @@ async def get_movies_by_platform(
                 continue
             
             filtered_movies.append(MovieResponse(**movie.__dict__))
+        
+        filter_time = time.time() - filter_start
+        logger.info(f"Filtered to {len(filtered_movies)} movies in {filter_time:.2f}s")
+        
+        # Sort by Letterboxd rating (highest first), movies without rating go to end
+        sort_start = time.time()
+        filtered_movies.sort(
+            key=lambda m: (m.letterboxd_rating is not None, m.letterboxd_rating or 0),
+            reverse=True
+        )
+        sort_time = time.time() - sort_start
+        logger.info(f"Sorted movies in {sort_time:.2f}s")
+        
+        total_time = time.time() - start_time
+        logger.info(f"Total request time: {total_time:.2f}s")
+        
+        return SearchResponse(movies=filtered_movies, total=len(filtered_movies))
+    except Exception as e:
+        logger.error(f"Error fetching platform movies: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
         
         return SearchResponse(movies=filtered_movies, total=len(filtered_movies))
     except Exception as e:
