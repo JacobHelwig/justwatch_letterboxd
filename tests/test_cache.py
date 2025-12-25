@@ -193,6 +193,11 @@ def test_partial_data(temp_cache):
 
 if __name__ == "__main__":
     print("Running cache tests...\n")
+if __name__ == "__main__":
+    import sys
+    verbose = "--verbose" in sys.argv or "-v" in sys.argv
+    
+    print("Running cache tests...\n")
     
     # Create temp cache for manual tests
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -207,14 +212,32 @@ if __name__ == "__main__":
             letterboxd_rating=4.22
         )
         
+        if verbose:
+            print("\nTest: cache operations")
+            print(f"  Caching movie: {sample.title}")
+        
         print("Testing cache operations...")
         cache.set(sample)
         cached = cache.get(sample.imdb_id)
         assert cached is not None
+        
+        if verbose:
+            print(f"  Retrieved from cache: {cached.title}")
+            print(f"  IMDb ID: {cached.imdb_id}")
+            print(f"  Rating: {cached.letterboxd_rating}")
+            print(f"  Platforms: {cached.streaming_platforms}")
+        
         print("✓ Set and get test passed")
         
         stats = cache.get_stats()
         assert stats['total_entries'] == 1
+        
+        if verbose:
+            print(f"\nCache stats:")
+            print(f"  Total entries: {stats['total_entries']}")
+            print(f"  Oldest: {stats['oldest_entry']}")
+            print(f"  Newest: {stats['newest_entry']}")
+        
         print("✓ Stats test passed")
         
         cache.clear_all()
@@ -223,3 +246,5 @@ if __name__ == "__main__":
         print("✓ Clear test passed")
     
     print("\n✓ All manual tests passed!")
+    if not verbose:
+        print("\nRun with --verbose or -v to see detailed output")

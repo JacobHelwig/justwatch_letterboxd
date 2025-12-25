@@ -197,12 +197,12 @@ movie.url              # Letterboxd URL
 - [x] `.env.example` created
 - [x] Project reorganized into modular structure
 
-**Goal 2: Core Integration** 
-- [ ] Implement JustWatch client wrapper (`src/justwatch/`)
-- [ ] Implement Letterboxd client wrapper (`src/letterboxd/`)
-- [ ] Build movie matching logic (IMDb ID-based)
-- [ ] Add caching layer (SQLite or JSON)
-- [ ] Write integration tests
+**Goal 2: Core Integration** ✅ COMPLETED
+- [x] Implement JustWatch client wrapper (`src/justwatch/`)
+- [x] Implement Letterboxd client wrapper (`src/letterboxd/`)
+- [x] Build movie matching logic (IMDb ID-based)
+- [x] Add caching layer (SQLite or JSON)
+- [x] Write integration tests
 
 **Goal 3: Web Interface** 
 - [ ] Set up web framework (Flask/FastAPI)
@@ -210,6 +210,14 @@ movie.url              # Letterboxd URL
 - [ ] Build frontend UI for streaming service selection
 - [ ] Add filtering by genre, rating, year
 - [ ] Deploy as public website
+
+## Future Work / TODOs
+
+**Testing & CI/CD**:
+- [ ] Migrate all tests to pytest framework exclusively (currently using mix of pytest and custom main functions)
+- [ ] Set up GitHub Actions CI/CD pipeline for automated testing
+- [ ] Add test coverage reporting
+- [ ] Configure automated PR checks (linting, tests, coverage)
 
 ## Important Notes
 
