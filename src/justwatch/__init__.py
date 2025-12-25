@@ -1,0 +1,1 @@
+"""JustWatch API client wrapper"""
