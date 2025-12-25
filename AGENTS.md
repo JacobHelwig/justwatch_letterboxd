@@ -186,14 +186,14 @@ movie.url              # Letterboxd URL
 - [x] `.env.example` created
 - [x] Project reorganized into modular structure
 
-**Goal 2: Core Integration** (Proposed)
+**Goal 2: Core Integration** 
 - [ ] Implement JustWatch client wrapper (`src/justwatch/`)
 - [ ] Implement Letterboxd client wrapper (`src/letterboxd/`)
 - [ ] Build movie matching logic (IMDb ID-based)
 - [ ] Add caching layer (SQLite or JSON)
 - [ ] Write integration tests
 
-**Goal 3: Web Interface** (Proposed)
+**Goal 3: Web Interface** 
 - [ ] Set up web framework (Flask/FastAPI)
 - [ ] Create API endpoints for movie search and filtering
 - [ ] Build frontend UI for streaming service selection
