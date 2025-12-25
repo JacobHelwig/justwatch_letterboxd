@@ -1,0 +1,1 @@
+"""Letterboxd API client wrapper"""

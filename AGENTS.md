@@ -4,9 +4,9 @@ This file provides guidance to agents (i.e., ADAL) when working with code in thi
 
 ## Project Overview
 
-**justwatch_letterboxd** - A tool to integrate JustWatch streaming availability data with Letterboxd movie lists.
+**justwatch_letterboxd** - A web application that integrates JustWatch streaming availability data with Letterboxd movie ratings.
 
-**Current Status**: Empty repository - project structure and implementation pending.
+**Current Status**: Goal 1 completed - API integration validated
 
 ## Project Intent
 
@@ -20,136 +20,196 @@ The base user workflow would be:
 
 ## Development Setup 
 
-Once the project structure is established, document here:
-- **Language/Framework**: python
+- **Language/Framework**: Python 3.14+
 - **Package Manager**: uv
-- **Dependencies**: TBD
-- **API Keys Required**: 
-  - JustWatch API credentials (if available)
-  - Letterboxd API access (if using official API vs scraping)
-- **Environment Variables**: Document in `.env.example` when created
+- **Dependencies**: simple-justwatch-python-api, letterboxdpy, httpx, pytest
+- **API Keys Required**: None (both APIs use unofficial methods)
+- **Environment Variables**: See `.env.example`
 
 ## Essential Commands
 
 ```bash
-# Initialize project (if not done yet)
-uv init
-
-# Add dependencies
-uv add requests httpx pytest
-
-# Run main script
-uv run python src/main.py
+# Install dependencies
+uv sync
 
 # Run tests
+uv run python tests/test_justwatch.py
+uv run python tests/test_letterboxd.py
+
+# Run all tests with pytest
 uv run pytest
 
 # Run linter
 uv run ruff check .
+
+# Format code
+uv run ruff format .
 ```
 
-## Architecture Considerations
+## Development Workflow
 
-When implementing this project, consider documenting:
+**Incremental Development**:
+- Commit changes incrementally after each logical unit of work
+- Run tests after each implementation before committing
+- Never commit broken code or failing tests
 
-### Data Flow
-- How movie data is fetched from JustWatch
-- How Letterboxd data is retrieved (API vs web scraping)
-- Data matching strategy (TMDB IDs, IMDb IDs, or title/year matching)
-- Caching strategy to avoid rate limits
+**Documentation Maintenance**:
+- Update `README.md` after completing features or milestones
+  - Keep "Project Status" current with completed goals
+  - Update "Features" section as capabilities are added
+- Update `AGENTS.md` after discovering gotchas, patterns, or architecture changes
+  - Document API quirks immediately when discovered
+  - Add integration patterns when established
+- Keep roadmap in sync across `README.md` (Project Status) and `AGENTS.md` (Current Development Goal)
 
-### Key Integration Points
-- JustWatch API endpoints and rate limits
-- Letterboxd data access method
-- Data storage (if persisting matched results)
-- Output format (CLI, web interface, CSV, etc.)
+**Pre-Commit Checklist**:
+1. ✅ Tests pass (`uv run pytest`)
+2. ✅ Linter clean (`uv run ruff check .`)
+3. ✅ Docs updated (README.md, AGENTS.md reflect changes)
+4. ✅ Commit message descriptive
 
-### Critical Considerations
-- **Rate Limiting**: Both services may have API rate limits
-- **Data Accuracy**: Movie title matching can be tricky (international titles, year variations)
-- **Authentication**: Secure handling of API keys and user credentials
-- **Regional Availability**: JustWatch data varies by country/region
+## API Integration Details
 
-## File Structure (To Be Created)
+### JustWatch API
+- **Library**: `simple-justwatch-python-api` (v0.16)
+- **Method**: Unofficial GraphQL API
+- **Authentication**: None required
+- **Rate Limits**: No official limits, recommend 1-2 second delays
 
-Suggested structure to document once established:
+**Key Attributes**:
+```python
+from simplejustwatchapi.justwatch import search, details
+
+movie = search("title", country="US", language="en")[0]
+movie.entry_id         # Unique ID (e.g., "tm92641")
+movie.title            # Movie title
+movie.offers           # List of streaming offers
+movie.imdb_id          # IMDb ID (for matching)
+movie.tmdb_id          # TMDB ID
+movie.genres           # Genre dicts
+
+# Offers
+offer.package.name           # "Netflix", "Hulu", etc.
+offer.monetization_type      # "FLATRATE", "BUY", "RENT"
+offer.presentation_type      # "HD", "SD", "4K"
+```
+
+**Gotchas**:
+- ⚠️ Unofficial API - may break if schema changes
+- ⚠️ Must specify country/language for correct regional availability
+- ⚠️ `entry_id` not `node_id` (common mistake)
+
+### Letterboxd API
+- **Library**: `letterboxdpy` (v5.3.7)
+- **Method**: Web scraping
+- **Authentication**: None for public data
+- **Rate Limits**: No official limits, recommend 1-2 second delays
+
+**Key Attributes**:
+```python
+from letterboxdpy.movie import Movie
+from letterboxdpy.user import User
+
+movie = Movie("inception")  # Use slug, not title
+movie.title            # Movie title
+movie.rating           # Rating (e.g., 4.22/5.0)
+movie.year             # Release year
+movie.genres           # List of DICTS: [{"name": "Action"}, ...]
+movie.imdb_link        # IMDb link (for matching)
+movie.url              # Letterboxd URL
+```
+
+**Gotchas**:
+- ⚠️ Web scraping - fragile to HTML changes
+- ⚠️ Genres are dict objects with 'name' key (not strings)
+- ⚠️ Must use slug format: "the-matrix" not "The Matrix"
+- ⚠️ New movies may not have ratings yet
+
+### API Test Results
+
+**JustWatch API** (`simple-justwatch-python-api` v0.16):
+- **Test Cases**: Inception (not on Netflix US), Stranger Things ✅, The Crown ✅, Squid Game ✅
+- **Success Rate**: 3/3 Netflix titles verified
+- **Performance**: ~1-2 seconds per query via GraphQL
+- **Observations**: Regional availability differs significantly; IMDb/TMDB IDs provided for cross-referencing
+
+**Letterboxd API** (`letterboxdpy` v5.3.7):
+- **Test Cases**: Inception (4.22/5.0) ✅, Shawshank Redemption (4.58/5.0) ✅, Pulp Fiction (4.25/5.0) ✅, User profile (jack) ✅
+- **Success Rate**: 3/3 movies + 1 user profile verified
+- **Performance**: 2-4 seconds per movie via web scraping
+- **Observations**: Genres returned as dict objects with 'name' key; IMDb links available for cross-referencing
+
+### Integration Strategy
+**Movie Matching**:
+- **Primary**: Use IMDb ID (both APIs provide)
+  - JustWatch: `movie.imdb_id`
+  - Letterboxd: `movie.imdb_link` (extract ID from URL)
+- **Fallback**: Title + year matching (less reliable)
+
+**Workflow**:
+1. Fetch movies from JustWatch for selected platform/region
+2. Extract IMDb IDs from results
+3. Look up Letterboxd data using IMDb IDs
+4. Merge and display combined data
+
+**Performance**:
+- Rate limiting: 1-2 second delays between requests
+- Caching: Consider SQLite or JSON for frequently-accessed movies
+- Async: Use `httpx` for parallel requests (within rate limits)
+
+## File Structure
+
 ```
 .
-├── src/                    # Main source code
-│   ├── justwatch/         # JustWatch API integration
-│   ├── letterboxd/        # Letterboxd data fetching
-│   └── matcher/           # Logic to match movies between services
-├── tests/                 # Test suite
-├── config/                # Configuration files
-├── .env.example          # Example environment variables
-├── pyproject.toml        # Python dependencies (managed by uv)
-└── README.md             # User-facing documentation
+├── src/                          # Main source code
+│   ├── __init__.py              # Package initialization
+│   ├── justwatch/               # JustWatch API client (to implement)
+│   ├── letterboxd/              # Letterboxd API client (to implement)
+│   └── web/                     # Web application interface (to implement)
+├── tests/                       # Test suite
+│   ├── __init__.py
+│   ├── test_justwatch.py        # JustWatch API validation
+│   └── test_letterboxd.py       # Letterboxd API validation
+├── .env.example                 # Environment template
+├── pyproject.toml               # uv configuration
+└── README.md                    # User documentation
 ```
 
 ## Current Development Goal
 
-**Goal 1: API Access & Basic Integration Testing**
+**Goal 1: API Access & Basic Integration Testing** ✅ COMPLETED
 
-Establish connectivity with both JustWatch and Letterboxd APIs to validate data retrieval.
+- [x] JustWatch API access validated (3/3 Netflix titles verified)
+- [x] Letterboxd API access validated (3/3 movies + user profile verified)
+- [x] Test scripts created and verified
+- [x] API constraints documented
+- [x] `.env.example` created
+- [x] Project reorganized into modular structure
 
-### Objectives
-1. **JustWatch API Setup**:
-   - Research unofficial API libraries or reverse-engineered endpoints
-   - Implement basic movie search for Netflix availability
-   - Test data structure and response format
+**Goal 2: Core Integration** 
+- [ ] Implement JustWatch client wrapper (`src/justwatch/`)
+- [ ] Implement Letterboxd client wrapper (`src/letterboxd/`)
+- [ ] Build movie matching logic (IMDb ID-based)
+- [ ] Add caching layer (SQLite or JSON)
+- [ ] Write integration tests
 
-2. **Letterboxd API Setup**:
-   - Investigate official API access (requires approval) vs. scraping alternatives
-   - Implement movie lookup by title/ID
-   - Test rating and review data retrieval
-
-3. **Validation**:
-   - Successfully fetch a list of movies available on Netflix via JustWatch
-   - Successfully look up corresponding Letterboxd data for sample movies
-   - Document API limitations, rate limits, and authentication requirements
-
-### Success Criteria
-- ✅ Can fetch Netflix movie list from JustWatch
-- ✅ Can retrieve Letterboxd ratings for specific movies
-- ✅ Document API constraints in code comments
-- ✅ Create `.env.example` with required API keys/tokens
-
-## Next Steps for Development
-
-1. **Choose Implementation Approach**:
-   - Pure Python CLI tool
-   - Web application (Flask/FastAPI)
-   - Browser extension
-   - Mobile app
-
-2. **Research APIs**:
-   - JustWatch: No official public API (may need to reverse engineer or use third-party libraries)
-   - Letterboxd: Official API exists but requires approval; alternative is scraping
-
-3. **Define MVP Features**:
-   - Input: Letterboxd username or exported CSV
-   - Processing: Match movies with JustWatch data
-   - Output: List of movies with streaming availability
-
-4. **Set Up Development Environment**:
-   - Initialize package manager: `uv init`
-   - Add core dependencies: `uv add requests httpx`
-   - Set up linting: `uv add --dev ruff black`
-   - Set up testing: `uv add --dev pytest`
+**Goal 3: Web Interface** 
+- [ ] Set up web framework (Flask/FastAPI)
+- [ ] Create API endpoints for movie search and filtering
+- [ ] Build frontend UI for streaming service selection
+- [ ] Add filtering by genre, rating, year
+- [ ] Deploy as public website
 
 ## Important Notes
 
-- **Legal Considerations**: Ensure compliance with JustWatch and Letterboxd Terms of Service
-- **Respect Rate Limits**: Implement exponential backoff and caching
-- **Data Privacy**: If handling user credentials, follow security best practices
-- **Regional Settings**: Allow users to specify their country for accurate streaming availability
+- **Legal**: Ensure compliance with JustWatch and Letterboxd Terms of Service
+- **Rate Limits**: Both services - use 1-2 second delays
+- **Data Privacy**: Follow security best practices for any user data
+- **Regional Settings**: Allow users to specify country for accurate availability
 
 ## Resources
 
-- JustWatch unofficial API: Research community libraries
-- Letterboxd API: https://letterboxd.com/api-coming-soon/
-- Alternative: Letterboxd data export feature for CSV-based approach
-
----
-
-**Note**: This AGENTS.md should be updated as the project structure evolves. Remove placeholder sections and add concrete commands, architecture details, and gotchas as they're discovered during development.
+- **JustWatch API Library**: https://github.com/Electronic-Mango/simple-justwatch-python-api
+- **Letterboxd API Library**: https://pypi.org/project/letterboxdpy/
+- **JustWatch Website**: https://www.justwatch.com/
+- **Letterboxd Website**: https://letterboxd.com/

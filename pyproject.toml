@@ -1,0 +1,12 @@
+[project]
+name = "justwatch-letterboxd"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "httpx>=0.28.1",
+    "letterboxdpy>=5.3.7",
+    "pytest>=9.0.2",
+    "simple-justwatch-python-api>=0.16",
+]
