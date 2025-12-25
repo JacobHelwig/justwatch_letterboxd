@@ -86,6 +86,34 @@ Suggested structure to document once established:
 └── README.md             # User-facing documentation
 ```
 
+## Current Development Goal
+
+**Goal 1: API Access & Basic Integration Testing**
+
+Establish connectivity with both JustWatch and Letterboxd APIs to validate data retrieval.
+
+### Objectives
+1. **JustWatch API Setup**:
+   - Research unofficial API libraries or reverse-engineered endpoints
+   - Implement basic movie search for Netflix availability
+   - Test data structure and response format
+
+2. **Letterboxd API Setup**:
+   - Investigate official API access (requires approval) vs. scraping alternatives
+   - Implement movie lookup by title/ID
+   - Test rating and review data retrieval
+
+3. **Validation**:
+   - Successfully fetch a list of movies available on Netflix via JustWatch
+   - Successfully look up corresponding Letterboxd data for sample movies
+   - Document API limitations, rate limits, and authentication requirements
+
+### Success Criteria
+- ✅ Can fetch Netflix movie list from JustWatch
+- ✅ Can retrieve Letterboxd ratings for specific movies
+- ✅ Document API constraints in code comments
+- ✅ Create `.env.example` with required API keys/tokens
+
 ## Next Steps for Development
 
 1. **Choose Implementation Approach**:
