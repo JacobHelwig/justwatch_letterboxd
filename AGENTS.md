@@ -47,6 +47,13 @@ uv run ruff format .
 ```
 
 ## Development Workflow
+## Development Workflow
+
+**Branch-Based Development**:
+- Always develop on feature branches (e.g., `adal/goal-2-core-integration`)
+- Never commit directly to main
+- Open PR for review before merging to main
+- Delete branch after merging
 
 **Incremental Development**:
 - Commit changes incrementally after each logical unit of work
@@ -67,7 +74,6 @@ uv run ruff format .
 2. ✅ Linter clean (`uv run ruff check .`)
 3. ✅ Docs updated (README.md, AGENTS.md reflect changes)
 4. ✅ Commit message descriptive
-
 ## API Integration Details
 
 ### JustWatch API
