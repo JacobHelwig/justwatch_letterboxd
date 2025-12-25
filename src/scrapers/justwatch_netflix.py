@@ -71,9 +71,9 @@ class NetflixScraper:
                     # JustWatch uses sliding window pagination - just keep going until no movies found
                     page += 1
                     
-                    # Rate limiting - be respectful
+                    # Rate limiting - be respectful (1 req/sec)
                     import asyncio
-                    await asyncio.sleep(2)
+                    await asyncio.sleep(1)
                     
                 except httpx.HTTPError as e:
                     logger.error(f"HTTP error on page {page}: {e}")

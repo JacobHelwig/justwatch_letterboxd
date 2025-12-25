@@ -212,8 +212,8 @@ class CatalogManager:
                     pbar.update(1)
                     pbar.set_postfix({'matched': len(matched), 'missing': len(missing)})
                     
-                    # Rate limiting - respect Letterboxd
-                    await asyncio.sleep(2)
+                    # Rate limiting - respect Letterboxd (1 req/sec)
+                    await asyncio.sleep(1)
                     
                 except Exception as e:
                     logger.error(f"Error processing {movie['title']}: {e}")
