@@ -74,6 +74,9 @@ All commits made by AdaL should include co-authorship line at the end of commit 
 Co-Authored-By: AdaL <adal@sylph.ai>
 ```
 
+**Command Approval**:
+When AdaL needs to run commands that modify files or perform operations (e.g., `git commit`, `gh pr create`, file writes), it will ask for approval before execution. To skip approval prompts and allow AdaL to execute commands automatically, use the chat input `/skip_approval true` when starting a session or before a sequence of operations.
+
 **Testing Requirements**:
 - All new features must include tests when feasible
 - Tests should cover core functionality and edge cases
