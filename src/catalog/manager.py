@@ -5,10 +5,12 @@ import logging
 from datetime import datetime
 from typing import List, Dict, Set, Optional
 from pathlib import Path
+from tqdm import tqdm
 
 from ..cache import MovieCache
 from ..scrapers.justwatch_netflix import NetflixScraper
 from ..letterboxd.client import LetterboxdClient
+from ..matcher import MovieMatcher, MatchedMovie
 from ..matcher import MovieMatcher, MatchedMovie
 
 logger = logging.getLogger(__name__)
@@ -169,8 +171,6 @@ class CatalogManager:
         """
         title = movie.get('title', '').strip().lower()
         year = movie.get('year', '')
-        return f"{title}|{year}" if year else title
-    
     async def _process_new_titles(self, new_titles: List[Dict]) -> tuple[List[MatchedMovie], List[Dict]]:
         """Query Letterboxd for new titles and match them
         
@@ -183,36 +183,44 @@ class CatalogManager:
         matched = []
         missing = []
         
-        for movie in new_titles:
-            try:
-                # Try to match by title (IMDb ID not available from scraper)
-                letterboxd_movie = self.letterboxd_client.get_movie_by_title(
-                    movie['title']
-                )
-                
-                if letterboxd_movie:
-                    # Create MatchedMovie
-                    matched_movie = MatchedMovie(
-                        title=movie['title'],
-                        year=movie.get('year'),
-                        justwatch_id=movie.get('justwatch_id'),
-                        imdb_id=letterboxd_movie.imdb_link.split('/')[-2] if letterboxd_movie.imdb_link else None,
-                        letterboxd_rating=letterboxd_movie.rating,
-                        letterboxd_url=letterboxd_movie.url,
-                        genres=[g['name'] for g in letterboxd_movie.genres] if letterboxd_movie.genres else [],
-                        streaming_platforms=['Netflix']
+        # Progress bar for Letterboxd matching
+        with tqdm(total=len(new_titles), desc="Matching with Letterboxd", unit="movie") as pbar:
+            for movie in new_titles:
+                try:
+                    # Try to match by title (IMDb ID not available from scraper)
+                    letterboxd_movie = self.letterboxd_client.get_movie_by_title(
+                        movie['title']
                     )
-                    matched.append(matched_movie)
-                else:
+                    
+                    if letterboxd_movie:
+                        # Create MatchedMovie
+                        matched_movie = MatchedMovie(
+                            title=movie['title'],
+                            year=movie.get('year'),
+                            justwatch_id=movie.get('justwatch_id'),
+                            imdb_id=letterboxd_movie.imdb_link.split('/')[-2] if letterboxd_movie.imdb_link else None,
+                            letterboxd_rating=letterboxd_movie.rating,
+                            letterboxd_url=letterboxd_movie.url,
+                            genres=[g['name'] for g in letterboxd_movie.genres] if letterboxd_movie.genres else [],
+                            streaming_platforms=['Netflix']
+                        )
+                        matched.append(matched_movie)
+                    else:
+                        missing.append(movie)
+                    
+                    # Update progress bar
+                    pbar.update(1)
+                    pbar.set_postfix({'matched': len(matched), 'missing': len(missing)})
+                    
+                    # Rate limiting - respect Letterboxd
+                    await asyncio.sleep(2)
+                    
+                except Exception as e:
+                    logger.error(f"Error processing {movie['title']}: {e}")
                     missing.append(movie)
-                
-                # Rate limiting - respect Letterboxd
-                await asyncio.sleep(2)
-                
-            except Exception as e:
-                logger.error(f"Error processing {movie['title']}: {e}")
-                missing.append(movie)
+                    pbar.update(1)
         
+        return matched, missing
         return matched, missing
     
     async def _store_matched_movies(self, matched_movies: List[MatchedMovie]):

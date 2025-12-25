@@ -14,5 +14,6 @@ dependencies = [
     "pydantic>=2.12.5",
     "pytest>=9.0.2",
     "simple-justwatch-python-api>=0.16",
+    "tqdm>=4.67.1",
     "uvicorn>=0.40.0",
 ]
