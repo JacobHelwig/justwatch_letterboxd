@@ -28,7 +28,6 @@ The base user workflow would be:
 
 ## Essential Commands
 
-```bash
 ## Essential Commands
 
 ```bash
@@ -47,6 +46,30 @@ uv run ruff check .
 
 # Format code
 uv run ruff format .
+```
+
+## Development Workflow
+
+**Incremental Development**:
+- Commit changes incrementally after each logical unit of work
+- Run tests after each implementation before committing
+- Never commit broken code or failing tests
+
+**Documentation Maintenance**:
+- Update `README.md` after completing features or milestones
+  - Keep "Project Status" current with completed goals
+  - Update "Features" section as capabilities are added
+- Update `AGENTS.md` after discovering gotchas, patterns, or architecture changes
+  - Document API quirks immediately when discovered
+  - Add integration patterns when established
+- Keep roadmap in sync across `README.md` (Project Status) and `AGENTS.md` (Current Development Goal)
+
+**Pre-Commit Checklist**:
+1. ✅ Tests pass (`uv run pytest`)
+2. ✅ Linter clean (`uv run ruff check .`)
+3. ✅ Docs updated (README.md, AGENTS.md reflect changes)
+4. ✅ Commit message descriptive with co-authorship
+
 ## API Integration Details
 
 ### JustWatch API
