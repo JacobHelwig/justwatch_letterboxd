@@ -45,6 +45,15 @@ uv run ruff check .
 
 # Format code
 uv run ruff format .
+
+# Trigger full Netflix catalog sync (initial setup)
+curl -X POST http://localhost:8000/api/sync/trigger
+
+# Check sync status
+curl http://localhost:8000/api/sync/status
+
+# View missing Letterboxd titles
+curl http://localhost:8000/api/sync/missing
 ```
 
 ## Development Workflow
