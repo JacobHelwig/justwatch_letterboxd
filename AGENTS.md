@@ -10,31 +10,42 @@ This file provides guidance to agents (i.e., ADAL) when working with code in thi
 
 ## Project Intent
 
-Based on the repository name, this project likely aims to:
-- Fetch movie data from JustWatch (streaming availability across platforms)
-- Cross-reference with Letterboxd user data (watchlists, ratings, reviews)
-- Provide streaming availability for movies in Letterboxd lists
-- Possibly automate discovery of where to watch films from your Letterboxd collection
+JustWatch is a popular service that aggregates streaming availability for movies and TV shows across various platforms such as Netflix and Hulu. Letterboxd is a social platform for film enthusiasts to track and review movies. This project aims to allow users to look at Letterboxd scores for movies that are available on their streaming platform of choice via JustWatch.
 
-## Development Setup (To Be Determined)
+The base user workflow would be:
+1. User selects their streaming services.
+2. Our tool fetches movies available on this service from JustWatch and includes Letterboxd ratings for those movies.
+3. The user can filter based on information from JustWatch and Letterboxd.
+
+
+## Development Setup 
 
 Once the project structure is established, document here:
-- **Language/Framework**: TBD (likely Python given typical API integration projects)
-- **Package Manager**: TBD (poetry, pip, npm, etc.)
+- **Language/Framework**: python
+- **Package Manager**: uv
 - **Dependencies**: TBD
 - **API Keys Required**: 
   - JustWatch API credentials (if available)
   - Letterboxd API access (if using official API vs scraping)
 - **Environment Variables**: Document in `.env.example` when created
 
-## Essential Commands (Placeholder)
+## Essential Commands
 
 ```bash
-# To be filled in once project structure exists
-# Example structure:
-# poetry install              # Install dependencies
-# poetry run python main.py   # Run main script
-# poetry run pytest           # Run tests
+# Initialize project (if not done yet)
+uv init
+
+# Add dependencies
+uv add requests httpx pytest
+
+# Run main script
+uv run python src/main.py
+
+# Run tests
+uv run pytest
+
+# Run linter
+uv run ruff check .
 ```
 
 ## Architecture Considerations
@@ -71,7 +82,7 @@ Suggested structure to document once established:
 ├── tests/                 # Test suite
 ├── config/                # Configuration files
 ├── .env.example          # Example environment variables
-├── pyproject.toml        # Python dependencies (if using Poetry)
+├── pyproject.toml        # Python dependencies (managed by uv)
 └── README.md             # User-facing documentation
 ```
 
@@ -93,10 +104,10 @@ Suggested structure to document once established:
    - Output: List of movies with streaming availability
 
 4. **Set Up Development Environment**:
-   - Initialize package manager (poetry recommended for Python projects)
-   - Create virtual environment
-   - Set up linting (black, ruff) and testing (pytest)
-   - Configure pre-commit hooks
+   - Initialize package manager: `uv init`
+   - Add core dependencies: `uv add requests httpx`
+   - Set up linting: `uv add --dev ruff black`
+   - Set up testing: `uv add --dev pytest`
 
 ## Important Notes
 
