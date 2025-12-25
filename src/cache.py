@@ -36,7 +36,8 @@ class MovieCache:
         with sqlite3.connect(self.cache_file) as conn:
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS movies (
-                    imdb_id TEXT PRIMARY KEY,
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    imdb_id TEXT,
                     title TEXT NOT NULL,
                     year INTEGER,
                     justwatch_id TEXT,
@@ -47,11 +48,15 @@ class MovieCache:
                     genres TEXT,
                     letterboxd_url TEXT,
                     cached_at TEXT NOT NULL,
-                    last_accessed TEXT NOT NULL
+                    last_accessed TEXT NOT NULL,
+                    UNIQUE(title, year)
                 )
             """)
             conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_title ON movies(title)
+            """)
+            conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_imdb_id ON movies(imdb_id)
             """)
             conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_cached_at ON movies(cached_at)
@@ -227,3 +232,44 @@ class MovieCache:
             genres=json.loads(row['genres']) if row['genres'] else None,
             letterboxd_url=row['letterboxd_url']
         )
+    
+    def get_platform_catalog(self, platform: str) -> List[dict]:
+        """Get all movies for a specific streaming platform from cache
+        
+        Args:
+            platform: Platform name (e.g., "Netflix")
+        
+        Returns:
+            List of movie dicts with platform in streaming_platforms
+        """
+        with sqlite3.connect(self.cache_file) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.execute(
+                "SELECT * FROM movies WHERE streaming_platforms LIKE ?",
+                (f'%{platform}%',)
+            )
+            
+            movies = []
+            for row in cursor.fetchall():
+                movie = self._row_to_movie(row)
+                movies.append(movie.to_dict())
+            
+            return movies
+    
+    def delete(self, key: str):
+        """Delete a cache entry by key
+        
+        Args:
+            key: Cache key (e.g., "imdb:tt1234567" or "title:movie name")
+        """
+        # Parse key to determine lookup field
+        if key.startswith("imdb:"):
+            imdb_id = key.replace("imdb:", "")
+            with sqlite3.connect(self.cache_file) as conn:
+                conn.execute("DELETE FROM movies WHERE imdb_id = ?", (imdb_id,))
+                conn.commit()
+        elif key.startswith("title:"):
+            title = key.replace("title:", "")
+            with sqlite3.connect(self.cache_file) as conn:
+                conn.execute("DELETE FROM movies WHERE LOWER(title) = ?", (title.lower(),))
+                conn.commit()

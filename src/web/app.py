@@ -14,6 +14,7 @@ from src.justwatch.client import JustWatchClient
 from src.letterboxd.client import LetterboxdClient
 from src.matcher import MovieMatcher, MatchedMovie
 from src.cache import MovieCache
+from src.catalog.scheduler import CatalogScheduler
 
 # Configure logging for profiling
 logging.basicConfig(level=logging.INFO)
@@ -24,7 +25,7 @@ logger = logging.getLogger(__name__)
 class MovieResponse(BaseModel):
     """Movie response model"""
     title: str
-    imdb_id: str
+    imdb_id: Optional[str] = None
     year: Optional[int] = None
     justwatch_id: Optional[str] = None
     streaming_platforms: Optional[List[str]] = None
@@ -47,6 +48,16 @@ class SearchResponse(BaseModel):
     total: int
 
 
+class SyncStatusResponse(BaseModel):
+    """Sync status response model"""
+    running: bool
+    next_run_time: Optional[str] = None
+    job_id: Optional[str] = None
+    cache_stats: dict
+    missing_movies: int
+    missing_log_path: str
+
+
 # Initialize FastAPI app
 app = FastAPI(
     title="JustWatch + Letterboxd Integration",
@@ -63,17 +74,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize clients
+# Initialize clients and scheduler
 jw_client = JustWatchClient()
 lb_client = LetterboxdClient()
 matcher = MovieMatcher(jw_client, lb_client)
 cache = MovieCache()
-# Initialize clients
-jw_client = JustWatchClient()
-lb_client = LetterboxdClient()
-matcher = MovieMatcher(jw_client, lb_client)
-cache = MovieCache()
+scheduler = CatalogScheduler()
 
+
+@app.on_event("startup")
+async def startup_event():
+    """Start background scheduler on app startup"""
+    scheduler.start()
+    logger.info("Application started - catalog scheduler running")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Stop background scheduler on app shutdown"""
+    scheduler.stop()
+    logger.info("Application shutdown - catalog scheduler stopped")
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
@@ -135,10 +155,14 @@ async def search_movies(
         movies = []
         for jw_movie in jw_results:
             matched = matcher.match_by_imdb_id(jw_movie)
+            if matched:
+                movies.append(MovieResponse(**matched.__dict__))
+                cache.set(matched)
+        
         return SearchResponse(movies=movies, total=len(movies))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    except Exception as e:
+
 @app.get("/api/movies/{platform}", response_model=SearchResponse)
 async def get_movies_by_platform(
     platform: str,
@@ -242,6 +266,65 @@ async def get_movie(imdb_id: str):
         )
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/sync/status", response_model=SyncStatusResponse)
+async def get_sync_status():
+    """
+    Get Netflix catalog sync status
+    
+    Returns:
+        Sync status including scheduler state, next run time, and cache stats
+    """
+    scheduler_status = scheduler.get_status()
+    catalog_status = scheduler.catalog_manager.get_sync_status()
+    
+    return SyncStatusResponse(
+        running=scheduler_status['running'],
+        next_run_time=scheduler_status['next_run_time'].isoformat() if scheduler_status['next_run_time'] else None,
+        job_id=scheduler_status['job_id'],
+        cache_stats=catalog_status['cache_stats'],
+        missing_movies=catalog_status['missing_movies'],
+        missing_log_path=catalog_status['missing_log_path']
+    )
+
+
+@app.post("/api/sync/trigger")
+async def trigger_sync():
+    """
+    Manually trigger Netflix catalog sync
+    
+    Returns:
+        Sync statistics
+    """
+    try:
+        logger.info("Manual sync triggered via API")
+        stats = await scheduler.run_sync_now()
+        return {
+            "status": "success",
+            "stats": stats
+        }
+    except Exception as e:
+        logger.error(f"Manual sync failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Sync failed: {str(e)}")
+
+
+@app.get("/api/sync/missing")
+async def get_missing_movies():
+    """
+    Get list of movies not found on Letterboxd
+    
+    Returns:
+        List of missing movie entries from log
+    """
+    try:
+        missing = scheduler.catalog_manager.get_missing_movies()
+        return {
+            "count": len(missing),
+            "movies": missing
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

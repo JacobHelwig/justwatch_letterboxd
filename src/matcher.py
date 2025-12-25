@@ -18,7 +18,7 @@ class MatchedMovie:
     
     # Common fields
     title: str
-    imdb_id: str
+    imdb_id: Optional[str] = None
     year: Optional[int] = None
     
     # JustWatch data
@@ -31,6 +31,21 @@ class MatchedMovie:
     letterboxd_rating: Optional[float] = None
     genres: Optional[List[str]] = None
     letterboxd_url: Optional[str] = None
+    
+    def to_dict(self) -> dict:
+        """Convert to dictionary for cache storage"""
+        return {
+            'title': self.title,
+            'imdb_id': self.imdb_id,
+            'year': self.year,
+            'justwatch_id': self.justwatch_id,
+            'streaming_platforms': self.streaming_platforms,
+            'justwatch_rating': self.justwatch_rating,
+            'letterboxd_slug': self.letterboxd_slug,
+            'letterboxd_rating': self.letterboxd_rating,
+            'genres': self.genres,
+            'letterboxd_url': self.letterboxd_url
+        }
 
 
 class MovieMatcher:
