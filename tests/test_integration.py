@@ -245,9 +245,45 @@ if __name__ == "__main__":
     test_platform_movies_with_cache()
     test_cache_miss_then_fetch()
     test_multiple_api_calls()
+if __name__ == "__main__":
+    import sys
+    verbose = "--verbose" in sys.argv or "-v" in sys.argv
+    
+    print("Running integration tests...\n")
+    
+    if verbose:
+        print("\nTest: complete_workflow")
+        jw_client = JustWatchClient()
+        lb_client = LetterboxdClient()
+        matcher = MovieMatcher(jw_client, lb_client)
+        jw_results = jw_client.search_movies("Inception", count=1)
+        if jw_results:
+            matched = matcher.match_by_imdb_id(jw_results[0])
+            print(f"  Title: {matched.title}")
+            print(f"  IMDb ID: {matched.imdb_id}")
+            print(f"  JustWatch rating: {matched.justwatch_rating}")
+            print(f"  Letterboxd rating: {matched.letterboxd_rating}")
+            print(f"  Platforms: {matched.streaming_platforms}")
+    
+    test_complete_workflow()
+    
+    if verbose:
+        print("\nTest: platform_movies")
+        matcher = MovieMatcher()
+        movies = matcher.match_platform_movies("Netflix", count=3)
+        print(f"  Found {len(movies)} Netflix movies:")
+        for movie in movies:
+            print(f"  - {movie.title}: {movie.letterboxd_rating}/5.0")
+    
+    test_cached_vs_fresh_lookup()
+    test_platform_movies_with_cache()
+    test_cache_miss_then_fetch()
+    test_multiple_api_calls()
     test_partial_match_caching()
     test_end_to_end_with_filtering()
     test_client_integration()
     test_cache_statistics()
     
     print("\n✓ All integration tests passed!")
+    if not verbose:
+        print("\nRun with --verbose or -v to see detailed output")

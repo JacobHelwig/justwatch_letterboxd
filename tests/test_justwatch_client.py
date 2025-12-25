@@ -90,24 +90,73 @@ def test_extract_imdb_id():
 
 
 if __name__ == "__main__":
+    import sys
+    verbose = "--verbose" in sys.argv or "-v" in sys.argv
+    
     print("Running JustWatch client tests...\n")
     
     test_client_initialization()
     print("✓ Client initialization test passed")
     
+    if verbose:
+        print("\nTest: search_movies")
+        client = JustWatchClient()
+        results = client.search_movies("Inception", count=3)
+        print(f"  Found {len(results)} results")
+        for i, movie in enumerate(results[:2]):
+            print(f"  [{i+1}] {movie.title} ({movie.entry_id})")
+    
     test_search_movies()
     print("✓ Search movies test passed")
+    
+    if verbose:
+        print("\nTest: get_movie_details")
+        client = JustWatchClient()
+        results = client.search_movies("Inception", count=1)
+        if results:
+            details = client.get_movie_details(results[0].entry_id)
+            print(f"  Title: {details.title}")
+            print(f"  Entry ID: {details.entry_id}")
+            if details.offers:
+                print(f"  Offers: {len(details.offers)} platforms")
     
     test_get_movie_details()
     print("✓ Get movie details test passed")
     
+    if verbose:
+        print("\nTest: search_by_platform")
+        client = JustWatchClient()
+        results = client.search_by_platform("Stranger Things", "Netflix", count=3)
+        print(f"  Found {len(results)} Netflix results")
+        for movie in results[:2]:
+            platforms = client.get_streaming_platforms(movie)
+            print(f"  - {movie.title}: {platforms}")
+    
     test_search_by_platform()
     print("✓ Search by platform test passed")
     
+    if verbose:
+        print("\nTest: get_streaming_platforms")
+        client = JustWatchClient()
+        results = client.search_movies("Stranger Things", count=1)
+        if results:
+            platforms = client.get_streaming_platforms(results[0])
+            print(f"  {results[0].title} available on: {platforms}")
+    
     test_get_streaming_platforms()
     print("✓ Get streaming platforms test passed")
+    
+    if verbose:
+        print("\nTest: extract_imdb_id")
+        client = JustWatchClient()
+        results = client.search_movies("Inception", count=1)
+        if results:
+            imdb_id = client.extract_imdb_id(results[0])
+            print(f"  {results[0].title} IMDb ID: {imdb_id}")
     
     test_extract_imdb_id()
     print("✓ Extract IMDb ID test passed")
     
     print("\n✓ All tests passed!")
+    if not verbose:
+        print("\nRun with --verbose or -v to see detailed output")

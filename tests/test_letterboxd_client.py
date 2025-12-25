@@ -113,19 +113,71 @@ if __name__ == "__main__":
     print("✓ Client initialization test passed")
     
     test_get_movie()
+if __name__ == "__main__":
+    import sys
+    verbose = "--verbose" in sys.argv or "-v" in sys.argv
+    
+    print("Running Letterboxd client tests...\n")
+    
+    test_client_initialization()
+    print("✓ Client initialization test passed")
+    
+    if verbose:
+        print("\nTest: get_movie")
+        client = LetterboxdClient()
+        movie = client.get_movie("inception")
+        print(f"  Title: {movie.title}")
+        print(f"  Year: {movie.year}")
+        print(f"  Rating: {movie.rating}/5.0")
+    
+    test_get_movie()
     print("✓ Get movie test passed")
+    
+    if verbose:
+        print("\nTest: get_movie_by_title")
+        client = LetterboxdClient()
+        movie = client.get_movie_by_title("The Matrix")
+        print(f"  Found: {movie.title} ({movie.year})")
     
     test_get_movie_by_title()
     print("✓ Get movie by title test passed")
     
+    if verbose:
+        print("\nTest: get_rating")
+        client = LetterboxdClient()
+        movie = client.get_movie("inception")
+        rating = client.get_rating(movie)
+        print(f"  {movie.title}: {rating}/5.0")
+    
     test_get_rating()
     print("✓ Get rating test passed")
+    
+    if verbose:
+        print("\nTest: get_genres")
+        client = LetterboxdClient()
+        movie = client.get_movie("inception")
+        genres = client.get_genres(movie)
+        print(f"  {movie.title} genres: {genres}")
     
     test_get_genres()
     print("✓ Get genres test passed")
     
+    if verbose:
+        print("\nTest: extract_imdb_id")
+        client = LetterboxdClient()
+        movie = client.get_movie("inception")
+        imdb_id = client.extract_imdb_id(movie)
+        print(f"  {movie.title} IMDb ID: {imdb_id}")
+    
     test_extract_imdb_id()
     print("✓ Extract IMDb ID test passed")
+    
+    if verbose:
+        print("\nTest: get_user")
+        client = LetterboxdClient()
+        user = client.get_user("jack")
+        print(f"  Username: {user.username}")
+        print(f"  Display name: {user.display_name}")
     
     test_get_user()
     print("✓ Get user test passed")
@@ -137,3 +189,5 @@ if __name__ == "__main__":
     print("✓ Error handling test passed")
     
     print("\n✓ All tests passed!")
+    if not verbose:
+        print("\nRun with --verbose or -v to see detailed output")

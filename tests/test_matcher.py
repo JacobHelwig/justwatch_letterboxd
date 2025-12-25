@@ -140,7 +140,49 @@ if __name__ == "__main__":
     print("✓ Match by IMDb ID test passed")
     
     test_match_by_title()
+if __name__ == "__main__":
+    import sys
+    verbose = "--verbose" in sys.argv or "-v" in sys.argv
+    
+    print("Running movie matcher tests...\n")
+    
+    test_matcher_initialization()
+    print("✓ Matcher initialization test passed")
+    
+    if verbose:
+        print("\nTest: match_by_imdb_id")
+        matcher = MovieMatcher()
+        jw_client = JustWatchClient()
+        results = jw_client.search_movies("Inception", count=1)
+        if results:
+            matched = matcher.match_by_imdb_id(results[0])
+            print(f"  Title: {matched.title}")
+            print(f"  IMDb ID: {matched.imdb_id}")
+            print(f"  Letterboxd rating: {matched.letterboxd_rating}")
+            print(f"  Streaming: {matched.streaming_platforms}")
+    
+    test_match_by_imdb_id()
+    print("✓ Match by IMDb ID test passed")
+    
+    if verbose:
+        print("\nTest: match_by_title")
+        matcher = MovieMatcher()
+        matched = matcher.match_by_title("Inception")
+        print(f"  Title: {matched.title}")
+        print(f"  Year: {matched.year}")
+        print(f"  JustWatch rating: {matched.justwatch_rating}")
+        print(f"  Letterboxd rating: {matched.letterboxd_rating}")
+    
+    test_match_by_title()
     print("✓ Match by title test passed")
+    
+    if verbose:
+        print("\nTest: match_platform_movies")
+        matcher = MovieMatcher()
+        movies = matcher.match_platform_movies("Netflix", count=3)
+        print(f"  Found {len(movies)} Netflix movies:")
+        for movie in movies[:2]:
+            print(f"  - {movie.title} ({movie.letterboxd_rating if movie.letterboxd_rating else 'no rating'})")
     
     test_match_platform_movies()
     print("✓ Match platform movies test passed")
@@ -158,3 +200,5 @@ if __name__ == "__main__":
     print("✓ Match with streaming platforms test passed")
     
     print("\n✓ All tests passed!")
+    if not verbose:
+        print("\nRun with --verbose or -v to see detailed output")
