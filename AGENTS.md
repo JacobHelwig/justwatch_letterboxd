@@ -47,6 +47,13 @@ uv run ruff format .
 ```
 
 ## Development Workflow
+## Development Workflow
+
+**Branch-Based Development**:
+- Always develop on feature branches (e.g., `adal/goal-2-core-integration`)
+- Never commit directly to main
+- Open PR for review before merging to main
+- Delete branch after merging
 
 **Incremental Development**:
 - Commit changes incrementally after each logical unit of work
@@ -54,20 +61,29 @@ uv run ruff format .
 - Never commit broken code or failing tests
 
 **Documentation Maintenance**:
-- Update `README.md` after completing features or milestones
-  - Keep "Project Status" current with completed goals
-  - Update "Features" section as capabilities are added
-- Update `AGENTS.md` after discovering gotchas, patterns, or architecture changes
-  - Document API quirks immediately when discovered
-  - Add integration patterns when established
-- Keep roadmap in sync across `README.md` (Project Status) and `AGENTS.md` (Current Development Goal)
-
+- Update `README.md` and `AGENTS.md` after completing features or milestones
+- Remove outdated information and correct inaccuracies when discovered
+- Keep documentation synchronized with actual implementation
 **Pre-Commit Checklist**:
 1. ✅ Tests pass (`uv run pytest`)
 2. ✅ Linter clean (`uv run ruff check .`)
-3. ✅ Docs updated (README.md, AGENTS.md reflect changes)
-4. ✅ Commit message descriptive
+3. ✅ Docs updated (README.md, AGENTS.md reflect changes, no outdated info)
+4. ✅ Commit message descriptive with co-authorship
 
+**Git Commit Co-Authorship**:
+All commits made by AdaL should include co-authorship line at the end of commit message:
+```
+Co-Authored-By: AdaL <adal@sylph.ai>
+```
+
+**Command Approval**:
+AdaL uses `skip_approval=true` for all operations (read-only and write/modify). This allows seamless automation of tasks like git commits, PR creation, and file modifications without manual approval prompts.
+
+**Testing Requirements**:
+- All new features must include tests when feasible
+- Tests should cover core functionality and edge cases
+- Run tests before committing to ensure they pass
+- Test files should be named `test_*.py` and placed in `tests/` directory
 ## API Integration Details
 
 ### JustWatch API
@@ -186,12 +202,12 @@ movie.url              # Letterboxd URL
 - [x] `.env.example` created
 - [x] Project reorganized into modular structure
 
-**Goal 2: Core Integration** 
-- [ ] Implement JustWatch client wrapper (`src/justwatch/`)
-- [ ] Implement Letterboxd client wrapper (`src/letterboxd/`)
-- [ ] Build movie matching logic (IMDb ID-based)
-- [ ] Add caching layer (SQLite or JSON)
-- [ ] Write integration tests
+**Goal 2: Core Integration** ✅ COMPLETED
+- [x] Implement JustWatch client wrapper (`src/justwatch/`)
+- [x] Implement Letterboxd client wrapper (`src/letterboxd/`)
+- [x] Build movie matching logic (IMDb ID-based)
+- [x] Add caching layer (SQLite or JSON)
+- [x] Write integration tests
 
 **Goal 3: Web Interface** 
 - [ ] Set up web framework (Flask/FastAPI)
@@ -199,6 +215,14 @@ movie.url              # Letterboxd URL
 - [ ] Build frontend UI for streaming service selection
 - [ ] Add filtering by genre, rating, year
 - [ ] Deploy as public website
+
+## Future Work / TODOs
+
+**Testing & CI/CD**:
+- [ ] Migrate all tests to pytest framework exclusively (currently using mix of pytest and custom main functions)
+- [ ] Set up GitHub Actions CI/CD pipeline for automated testing
+- [ ] Add test coverage reporting
+- [ ] Configure automated PR checks (linting, tests, coverage)
 
 ## Important Notes
 
