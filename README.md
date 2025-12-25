@@ -24,8 +24,32 @@ Discover highly-rated movies on your favorite streaming platforms. Our web appli
 🚧 **In Development**
 
 - ✅ **Goal 1 Complete**: API integration validated (JustWatch + Letterboxd)
-- 🔄 **Goal 2 In Progress**: Building core integration and web interface
-- ⏳ **Goal 3 Planned**: Deploy public website with full feature set
+- ✅ **Goal 2 Complete**: Core integration with caching and matching logic
+- 🔄 **Goal 3 In Progress**: Web interface with background catalog sync
+- ⏳ **Goal 4 Planned**: Deploy public website with full feature set
+
+## Quick Start
+
+**For Developers**:
+```bash
+# Install dependencies
+uv sync
+
+# Run web application
+uv run uvicorn src.web.app:app --host 0.0.0.0 --port 8000 --reload
+
+# Trigger initial Netflix catalog sync (~2.1 hours)
+curl -X POST http://localhost:8000/api/sync/trigger
+
+# Check sync progress
+curl http://localhost:8000/api/sync/status
+```
+
+**Background Sync**:
+- Automatic daily sync at 2:00 AM
+- Only queries Letterboxd for new titles (~10-50/day)
+- Progress bar shows real-time matching status
+- Cache expires after 48 hours for freshness
 
 ## Coming Soon
 
